@@ -15,18 +15,18 @@ import java.net.http.HttpResponse;
 @Service
 public class GatewayProxyService {
 
-    private final String authServerUrl;
+    private final String authServiceUrl;
     private final String productServiceUrl;
     private final String orderServiceUrl;
     private final HttpClient httpClient;
 
 
     public GatewayProxyService(
-            @Value("${app.auth-server-url") String authServerUrl,
-            @Value("${app.product-service-url") String productServiceUrl,
-            @Value("${app.order-service-url") String orderServiceUrl,
+            @Value("${app.auth-service-url}") String authServerUrl,
+            @Value("${app.product-service-url}") String productServiceUrl,
+            @Value("${app.order-service-url}") String orderServiceUrl,
             HttpClient httpClient) {
-        this.authServerUrl = authServerUrl;
+        this.authServiceUrl = authServerUrl;
         this.productServiceUrl = productServiceUrl;
         this.orderServiceUrl = orderServiceUrl;
         this.httpClient = httpClient;
