@@ -64,6 +64,15 @@ public class GatewayProxyService {
         return send(builder, authorization);
     }
 
+    private ResponseEntity<String> forwardGet(
+            String baseUrl,
+            String path,
+            String authorization) {
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl.replaceAll("/+$", "") + path)).GET();
+
+        return send(builder, authorization);
+    }
+
     private ResponseEntity<String> send(HttpRequest.Builder builder, String authorization) {
         if (authorization != null && !authorization.isBlank()) {
             builder.header(
@@ -95,6 +104,4 @@ public class GatewayProxyService {
         }
 
     }
-
-
 }
