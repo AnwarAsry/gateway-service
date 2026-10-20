@@ -3,10 +3,7 @@ package se.iths.gateway_service.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import se.iths.gateway_service.service.GatewayProxyService;
 
 @RestController
@@ -16,6 +13,12 @@ public class GatewayController {
 
     public GatewayController(GatewayProxyService proxyService) {
         this.proxyService = proxyService;
+    }
+
+    // Mapping for get all products
+    @GetMapping("/products")
+    public ResponseEntity<String> getProducts(HttpServletRequest request) {
+        return proxyService.getAllProducts(request.getHeader(HttpHeaders.AUTHORIZATION));
     }
 
     @PostMapping("/products")
