@@ -44,7 +44,7 @@ public class SecurityConfig {
 
     @Bean
     public HttpClient httpClient() {
-        return httpClient().newBuilder()
+        return HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))
                 .build();
     }
