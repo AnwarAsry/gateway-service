@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -30,6 +31,37 @@ public class GatewayProxyService {
         this.productServiceUrl = productServiceUrl;
         this.orderServiceUrl = orderServiceUrl;
         this.httpClient = httpClient;
+    }
+
+    public ResponseEntity<String> createProduct(
+            String requestBody,
+            String authorization,
+            String contentType) {
+        return forwardPost(productServiceUrl, "/products", requestBody, authorization, contentType);
+    }
+
+    public ResponseEntity<String> createOrder(
+            String requestBody,
+            String authorization,
+            String contentType) {
+        return forwardPost(orderServiceUrl, "/orders", requestBody, authorization, contentType);
+    }
+
+    private ResponseEntity<String> forwardPost(
+            String baseUrl,
+            String path,
+            String requestBody,
+            String authorization,
+            String contentType) {
+        HttpRequest.Builder builder = HttpRequest.newBuilder(
+                        URI.create(baseUrl.replaceAll("/+$", "") + path))
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody));
+
+        if (contentType != null && !contentType.isBlank()) {
+            builder.header(HttpHeaders.CONTENT_TYPE, contentType);
+        }
+
+        return send(builder, authorization);
     }
 
     private ResponseEntity<String> send(HttpRequest.Builder builder, String authorization) {
