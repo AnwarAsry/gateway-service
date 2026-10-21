@@ -15,6 +15,12 @@ public class GatewayController {
         this.proxyService = proxyService;
     }
 
+    // Mapping for get single product
+    @GetMapping("/products/{id}")
+    public ResponseEntity<String> getSingleProduct(@PathVariable String id, HttpServletRequest request) {
+        return proxyService.getProductById(id, request.getHeader(HttpHeaders.AUTHORIZATION));
+    }
+  
     // Mapping for get all products
     @GetMapping("/products")
     public ResponseEntity<String> getProducts(HttpServletRequest request) {
