@@ -33,11 +33,21 @@ public class GatewayProxyService {
         this.httpClient = httpClient;
     }
 
+    public ResponseEntity<String> login(String requestBody, String contentType) {
+        return forwardPost(
+                authServiceUrl,
+                "/auth/login",
+                requestBody,
+                null,
+                contentType
+        );
+    }
+
     // Get single product from product-service
     public ResponseEntity<String> getProductById(String id, String authorization) {
         return forwardGet(productServiceUrl, "/products/" + id, authorization);
     }
-  
+
     // Get all products from product-service
     public ResponseEntity<String> getAllProducts(String authorization) {
         return forwardGet(productServiceUrl, "/products", authorization);
