@@ -67,6 +67,10 @@ public class GatewayProxyService {
         return forwardPost(orderServiceUrl, "/orders", requestBody, authorization, contentType);
     }
 
+    public ResponseEntity<String> me(String token) {
+        return forwardGet(authServiceUrl, "/auth/me", "Bearer " + token);
+    }
+
     private ResponseEntity<String> forwardPost(
             String baseUrl,
             String path,
