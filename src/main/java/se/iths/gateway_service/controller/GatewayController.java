@@ -7,6 +7,13 @@ import se.iths.gateway_service.service.GatewayProxyService;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+/**
+ * Enda publika ingångspunkten mot systemets mikrotjänster. Tar emot anrop från frontend
+ * och vidarebefordrar dem via {@link GatewayProxyService} till auth-service, product-service
+ * eller order-service. Hanterar även själva autentiseringscykeln mot frontend sätter en
+ * HttpOnly-cookie med JWT vid inloggning, läser den vid {@code /auth/me}, och raderar den
+ * vid utloggning.
+ */
 @RestController
 @RequestMapping("/gateway")
 public class GatewayController {
@@ -18,6 +25,15 @@ public class GatewayController {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Loggar in en användare via auth-service och sätter JWT:n som en HttpOnly-cookie
+     * i svaret till klienten. Om auth-service svarar med ett fel (icke-2xx) eller
+     * en tom body vidarebefordras det svaret oförändrat, utan att någon cookie sätts.
+     *
+     * @param requestBody inloggningsuppgifter från klienten
+     * @param request     används för att läsa klientens Content-Type-header
+     * @return {@code 200 OK} med cookie satt vid lyckad inloggning, annars auth-services felsvar rakt av
+     */
     @PostMapping("/auth/login")
     public ResponseEntity<String> login(@RequestBody String requestBody, HttpServletRequest request) {
         ResponseEntity<String> response = proxyService.login(
@@ -42,6 +58,12 @@ public class GatewayController {
                 .body(response.getBody());
     }
 
+    /**
+     * Returnerar information om den inloggade användaren, baserat på JWT läst ur gatewayns HttpOnly-cookie.
+     *
+     * @param token JWT från cookien {@code token}
+     * @return {@code 401 Unauthorized} om ingen cookie finns, annars auth-services svar
+     */
     @GetMapping("/auth/me")
     public ResponseEntity<String> me(@CookieValue(name = "token", required = false) String token) {
         if (token == null) {
@@ -50,6 +72,11 @@ public class GatewayController {
         return proxyService.me(token);
     }
 
+    /**
+     * Loggar ut användaren genom att radera gatewayns JWT-cookie.
+     *
+     * @return {@code 204 No Content} med en cookie satt att utgå omedelbart
+     */
     @PostMapping("/auth/logout")
     public ResponseEntity<Void> logout() {
         ResponseCookie cookie = ResponseCookie.from("token", "")
@@ -59,18 +86,36 @@ public class GatewayController {
                 .build();
     }
 
-    // Mapping for get single product
+    /**
+     * Hämtar en specifik produkt via product-service.
+     *
+     * @param id      produktens id
+     * @param request används för att läsa klientens Authorization-header
+     * @return product-services svar
+     */
     @GetMapping("/products/{id}")
     public ResponseEntity<String> getSingleProduct(@PathVariable String id, HttpServletRequest request) {
         return proxyService.getProductById(id, request.getHeader(HttpHeaders.AUTHORIZATION));
     }
 
-    // Mapping for get all products
+    /**
+     * Hämtar samtliga produkter via product-service.
+     *
+     * @param request används för att läsa klientens Authorization-header
+     * @return product-services svar
+     */
     @GetMapping("/products")
     public ResponseEntity<String> getProducts(HttpServletRequest request) {
         return proxyService.getAllProducts(request.getHeader(HttpHeaders.AUTHORIZATION));
     }
 
+    /**
+     * Skapar en ny produkt via product-service.
+     *
+     * @param requestBody produktdata från klienten
+     * @param request     används för att läsa klientens Authorization- och Content-Type-header
+     * @return product-services svar
+     */
     @PostMapping("/products")
     public ResponseEntity<String> createProduct(
             @RequestBody String requestBody,
@@ -81,6 +126,13 @@ public class GatewayController {
                 request.getHeader(HttpHeaders.CONTENT_TYPE));
     }
 
+    /**
+     * Skapar en ny order via order-service.
+     *
+     * @param requestBody orderdata från klienten
+     * @param request     används för att läsa klientens Authorization- och Content-Type-header
+     * @return order-services svar
+     */
     @PostMapping("/orders")
     public ResponseEntity<String> createOrder(
             @RequestBody String requestBody,
